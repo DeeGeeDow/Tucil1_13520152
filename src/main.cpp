@@ -1,10 +1,15 @@
-#include<bits/stdc++.h>
-#include<ctime>
+#include<iostream>
+#include<vector>
+#include<queue>
+#include<string>
+#include<ostream>
+#include<fstream>
+#include<chrono>
 
 using namespace std;
 
-const string vertical_direction[3] = {" ATAS", " ", " BAWAH"};
-const string horizontal_direction[3] = {" KIRI" , " ", " KANAN"};
+const string vertical_direction[3] = {" ATAS", "", " BAWAH"};
+const string horizontal_direction[3] = {" KIRI" , "", " KANAN"};
 int n,m;
 int total_count = 0;
 typedef struct {
@@ -23,7 +28,10 @@ void readPuzzle(){
     bool wordinput = false;
     string input;
 
-    puzzle_stream.open("../test/puzzle.txt", ios::in);
+    cout << "Input file name : " << flush;
+    cin >> input;
+
+    puzzle_stream.open("../test/" + input, ios::in);
     if(puzzle_stream.is_open()){
         while(!wordinput && getline(puzzle_stream,input)){
             vector<char> line;
@@ -41,6 +49,8 @@ void readPuzzle(){
             words.push(input);
         }
         puzzle_stream.close();
+    }else{
+        cout << "File name is not valid\n";
     }
 }
 
@@ -72,9 +82,9 @@ void showSolution(ans cur, int len){
 
     for(int i=0; i<solution.size(); i++){
         for(int j=0; j<solution[i].size(); j++){
-            cout << solution[i][j] << " ";
+            std::cout << solution[i][j] << " ";
         }
-        cout << endl;
+        std::cout << endl;
     }
 }
 void solvePuzzle(int ver, int hor){
@@ -84,15 +94,13 @@ void solvePuzzle(int ver, int hor){
           periksa empat arah apakah mungkin menemukan kata tersebut, cek huruf kedua dari arah-arah yang mungkin,
           periksa huruf-huruf selanjutnya dari arah tersebut jika huruf keduanya cocok, lakukan sampai ditemukan
     */
-   std:: clock_t start, start_word;
-   double duration, word_duration;
 
-   start = clock();
+   auto start = chrono::high_resolution_clock::now();
     while(!words.empty()){
         string word = words.front();
         
-        cout << "Processing word: " << word << "...\r" << flush;
-        start_word = clock();
+        std::cout << "Processing word: " << word << "...\r" << flush;
+        auto start_word = chrono::high_resolution_clock::now();
         int i=0;
         int j=0;
         int count = 0;
@@ -151,24 +159,25 @@ void solvePuzzle(int ver, int hor){
         }
 
         if(found){
-            word_duration = (clock() - start_word)*1000 / (double) CLOCKS_PER_SEC;
-            cout << "Found " << words.front() << " at (" << current_answer.i << "," << current_answer.j << ") with direction" << vertical_direction[current_answer.direct_i+1] << horizontal_direction[current_answer.direct_j+1] << "\ncount : " << count << "\nOperation takes " << word_duration << "ms" << endl;
+            auto end_word = chrono::high_resolution_clock::now();
+            auto time_word = chrono::duration_cast<chrono::milliseconds>(end_word-start_word);
+            std::cout << "Found " << words.front() << " at (" << current_answer.i << "," << current_answer.j << ") with direction" << vertical_direction[current_answer.direct_i+1] << horizontal_direction[current_answer.direct_j+1] << "\nComparison count : " << count << endl;
             showSolution(current_answer, word.length());
-            cout << endl;
+            std::cout << endl;
 
+        }else{
+            std::cout << "The word " << word << " is not found." << endl;
         }
         words.pop();
         total_count += count;
     }
-    duration = (clock() - start)*1000 / (double) CLOCKS_PER_SEC;
-    cout << "Operation took " << duration << "ms\nTotal count : " << total_count << endl;
+
+    auto end = chrono::high_resolution_clock::now();
+    auto time = chrono::duration_cast<chrono::milliseconds>(end-start);
+    std::cout << "Operation took " << time.count() << "ms\nTotal comparison : " << total_count << endl;
 }
 
 int main(){
-    ios_base::sync_with_stdio(0);
-    cin.tie(0);
-    cout.tie(0);
-
     readPuzzle();
-    solvePuzzle(puzzle.size(), puzzle[0].size());
+    if(!puzzle.empty()) solvePuzzle(puzzle.size(), puzzle[0].size());
 }
